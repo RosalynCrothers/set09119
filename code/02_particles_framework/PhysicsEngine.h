@@ -23,5 +23,7 @@ private:
 
 	PhysicsBody ground;
 	Particle particle;
+	//new
+	PhysicsBody box;
 
 };
