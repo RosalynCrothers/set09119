@@ -33,6 +33,9 @@
 const GLuint WIDTH = 800, HEIGHT = 600;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
 
+
+
+
 // Function prototypes
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
@@ -53,6 +56,10 @@ glm::mat4 projection = glm::mat4(1.0f);
 // time
 GLfloat deltaTime = 0.0f;
 
+//phys properties
+glm::vec3 initial_speed = glm::vec3(0, 0, 0);
+glm::vec3 grav_accel = glm::vec3(0, -9.8, 0);
+glm::vec3 current_speed = glm::vec3(0, 0, 0);
 
 // window
 GLFWwindow* window = NULL;
@@ -203,7 +210,7 @@ int main(int argc, const char** argv)
 	ground.SetShader(&defaultShader);
 
 	particle.SetColor(glm::vec4(1, 0, 0, 1)); // set red color
-	particle.Translate(glm::vec3(0.0f, 5.0f, 0.0f)); // move up a bit
+	particle.Translate(glm::vec3(0.0f, 20.0f, 0.0f)); // move up a bit
 	//particle.Scale(glm::vec3(.1f, .1f, .1f)); // shrink it to 10% of original
 	//particle.Rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f)); // rotate by 90 degrees around X axis
 
@@ -213,7 +220,7 @@ int main(int argc, const char** argv)
 
 	GLfloat timeStart = (GLfloat)glfwGetTime();
 	GLfloat lastFrameTimeSinceStart = timeStart;
-	const float ANIMATION_SPEED = 11.0f; // increase this if you want time to move faster
+	const float ANIMATION_SPEED = 1.0f; // increase this if you want time to move faster
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -235,6 +242,18 @@ int main(int argc, const char** argv)
 		glfwPollEvents();
 		DoMovement();
 
+
+		current_speed = initial_speed + grav_accel * timeSinceStart;
+
+		std::cout << current_speed.y << std::endl;
+
+		//displacement changed at translate
+		// initial speed = 0
+		// current speed set by equation (v = u+at)
+		// gravity static at 9.8
+		// time = timeSinceStart
+		
+
 		// view and projection matrices
 		projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 		view = camera.GetViewMatrix();
@@ -248,18 +267,30 @@ int main(int argc, const char** argv)
 
 
 		// 1 - make particle fall with accelerating speed using the .Translate method
+		
+		//particle.Translate((deltaTime * (0.0f + current_speed))/2.0f);
 
 
 		// 2 - same as above using the .SetPosition method
 
+		particle.SetPosition((timeSinceStart * (0.0f + current_speed)) / 2.0f);
+
 
 		// 3 - make particle oscillate above the ground plane
 
+		//particle.SetPosition(glm::vec3(0, 5 * sin(timeSinceStart), 0));
+
 
 		// 4 - particle animation from initial velocity and acceleration
+		
+		//particle.Translate((deltaTime * (0.0f + current_speed))/2.0f);
 
 
 		// 5 - add collision with plane
+		if (particle.Position().y < 0)
+		{
+			current_speed = -current_speed;
+		}
 
 
 		// 6 - Same as above but for a collection of particles
